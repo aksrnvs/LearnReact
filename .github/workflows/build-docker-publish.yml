@@ -22,8 +22,9 @@ jobs:
       - name: Setup Docker
         run: |
           sudo apt-get update
+          sudo apt-get remove -y containerd
           sudo apt-get install -y docker.io
-          
+
       - name: Build Docker Image
         run: |
           docker build -t ${{ secrets.JF_URL }}/your-repo-name/your-image-name:latest .
