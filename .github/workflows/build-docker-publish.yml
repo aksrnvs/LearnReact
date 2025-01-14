@@ -1,0 +1,46 @@
+name: "JFrog Integration with Docker"
+
+on:
+  push:
+    branches:
+      - main  # or whichever branch you want to trigger on
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+         
+      - name: Setup JFrog CLI
+        uses: jfrog/setup-jfrog-cli@v4
+        env:  
+          JF_URL: ${{ vars.JF_URL }}
+          JF_ACCESS_TOKEN: ${{ secrets.JF_ACCESS_TOKEN }}
+           
+      - name: Setup Docker
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y docker.io
+          
+      - name: Build Docker Image
+        run: |
+          docker build -t ${{ secrets.JF_URL }}/your-repo-name/your-image-name:latest .
+        
+      - name: Login to JFrog Artifactory
+        run: |
+          jfrog rt c --url=${{ vars.JF_URL }} --apikey=${{ secrets.JF_ACCESS_TOKEN }}
+        
+      - name: Push Docker Image to JFrog Artifactory
+        run: |
+          jfrog rt docker-push ${{ secrets.JF_URL }}/your-repo-name/your-image-name:latest
+
+      - name: Publish Build Info with JFrog CLI
+        run: |
+          # Collect environment variables for the build
+          jf rt build-collect-env
+          # Collect VCS details from git and add them to the build
+          jf rt build-add-git
+          # Publish build info
+          jf rt build-publish
