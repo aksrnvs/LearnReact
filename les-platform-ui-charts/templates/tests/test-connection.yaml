@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "{{ include "les-platform-ui-charts.fullname" . }}-test-connection"
+  labels:
+    {{- include "les-platform-ui-charts.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": test
+spec:
+  containers:
+    - name: wget
+      image: busybox
+      command: ['wget']
+      args: ['{{ include "les-platform-ui-charts.fullname" . }}:{{ .Values.service.port }}']
+  restartPolicy: Never
